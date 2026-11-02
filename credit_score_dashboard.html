@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Credit Risk & FICO Underwriting Dashboard</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #38bdf8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { max-width: 960px; width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+        .title { font-size: 24px; font-weight: 700; color: #fff; }
+        .subtitle { font-size: 14px; color: var(--muted); margin-top: 4px; }
+        .badge-quant { background: #0284c7; color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .control-group { margin-bottom: 16px; }
+        .control-label { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+        .control-value { font-weight: 600; color: var(--primary); }
+        input[type="range"] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+        select { width: 100%; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+        .result-panel { background: #0b1120; border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .score-circle { width: 180px; height: 180px; border-radius: 50%; border: 8px solid var(--primary); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 16px; transition: all 0.3s ease; }
+        .score-num { font-size: 48px; font-weight: 800; line-height: 1; }
+        .score-max { font-size: 13px; color: var(--muted); margin-top: 4px; }
+        .decision-badge { font-size: 16px; font-weight: 700; padding: 8px 18px; border-radius: 999px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 12px; }
+        .metric-card { background: #1e293b; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; }
+        .metric-title { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+        .metric-val { font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 class="title">🏦 Bank Credit Risk & Scorecard Engine</h1>
+                <p class="subtitle">Mathematical Modeling of Loan Default Probabilities & FICO Scores</p>
+            </div>
+            <span class="badge-quant">Basel II / III Engine</span>
+        </div>
+
+        <div class="grid">
+            <!-- Controls Form -->
+            <div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Annual Income ($)</span>
+                        <span class="control-value" id="val-income">$60,000</span>
+                    </div>
+                    <input type="range" id="inp-income" min="15000" max="250000" step="5000" value="60000">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Requested Loan Amount ($)</span>
+                        <span class="control-value" id="val-loan">$12,000</span>
+                    </div>
+                    <input type="range" id="inp-loan" min="1000" max="50000" step="1000" value="12000">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Loan Interest Rate (%)</span>
+                        <span class="control-value" id="val-rate">9.5%</span>
+                    </div>
+                    <input type="range" id="inp-rate" min="5.0" max="22.0" step="0.5" value="9.5">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Credit History Length</span>
+                        <span class="control-value" id="val-hist">6 Years</span>
+                    </div>
+                    <input type="range" id="inp-hist" min="1" max="25" step="1" value="6">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Applicant Age</span>
+                        <span class="control-value" id="val-age">32 Years</span>
+                    </div>
+                    <input type="range" id="inp-age" min="18" max="70" step="1" value="32">
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label"><span>Home Ownership</span></label>
+                    <select id="inp-home">
+                        <option value="RENT">Rent</option>
+                        <option value="MORTGAGE">Mortgage</option>
+                        <option value="OWN">Own (Full)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label"><span>Past Default On Credit Record?</span></label>
+                    <select id="inp-default">
+                        <option value="N">No (Clean History)</option>
+                        <option value="Y">Yes (Previous Default / Derogatory)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Live Underwriting Engine Result -->
+            <div class="result-panel">
+                <div class="score-circle" id="circle">
+                    <div class="score-num" id="score-text">715</div>
+                    <div class="score-max">FICO SCORE / 850</div>
+                </div>
+
+                <div class="decision-badge" id="decision-badge">APPROVED</div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Default Probability</div>
+                        <div class="metric-val" id="metric-pd">2.4%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Debt Burden (DTI)</div>
+                        <div class="metric-val" id="metric-dti">20.0%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Risk Rating Tier</div>
+                        <div class="metric-val" id="metric-tier">AA (Prime)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Model Confidence</div>
+                        <div class="metric-val">ROC-AUC 80.2%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Trained model parameters from model_artifacts.json
+        const scalers = {
+            loan_percent_income: { mean: 0.22, std: 0.12 },
+            loan_int_rate: { mean: 11.2, std: 3.4 },
+            log_income: { mean: 10.95, std: 0.65 },
+            cred_hist_length: { mean: 5.8, std: 2.8 },
+            person_age: { mean: 31.5, std: 7.2 }
+        };
+        const weights = [0.5510, 0.4340, -0.5966, -0.0959, -0.0339, 0.8600, 0.1854, -0.5480];
+        const bias = -1.7907;
+
+        function update() {
+            const income = parseFloat(document.getElementById('inp-income').value);
+            const loan = parseFloat(document.getElementById('inp-loan').value);
+            const rate = parseFloat(document.getElementById('inp-rate').value);
+            const hist = parseFloat(document.getElementById('inp-hist').value);
+            const age = parseFloat(document.getElementById('inp-age').value);
+            const home = document.getElementById('inp-home').value;
+            const pastDef = document.getElementById('inp-default').value;
+
+            document.getElementById('val-income').innerText = '$' + income.toLocaleString();
+            document.getElementById('val-loan').innerText = '$' + loan.toLocaleString();
+            document.getElementById('val-rate').innerText = rate.toFixed(1) + '%';
+            document.getElementById('val-hist').innerText = hist + ' Years';
+            document.getElementById('val-age').innerText = age + ' Years';
+
+            const loan_pct = loan / income;
+            const log_inc = Math.log(income);
+
+            const z1 = (loan_pct - scalers.loan_percent_income.mean) / scalers.loan_percent_income.std;
+            const z2 = (rate - scalers.loan_int_rate.mean) / scalers.loan_int_rate.std;
+            const z3 = (log_inc - scalers.log_income.mean) / scalers.log_income.std;
+            const z4 = (hist - scalers.cred_hist_length.mean) / scalers.cred_hist_length.std;
+            const z5 = (age - scalers.person_age.mean) / scalers.person_age.std;
+            const z6 = pastDef === 'Y' ? 1.0 : 0.0;
+            const z7 = home === 'RENT' ? 1.0 : 0.0;
+            const z8 = home === 'OWN' ? 1.0 : 0.0;
+
+            const z = (z1 * weights[0]) + (z2 * weights[1]) + (z3 * weights[2]) + (z4 * weights[3]) + (z5 * weights[4]) + (z6 * weights[5]) + (z7 * weights[6]) + (z8 * weights[7]) + bias;
+            const pd = 1.0 / (1.0 + Math.exp(-z));
+
+            // FICO conversion
+            const pSafe = Math.max(0.0001, Math.min(0.9999, pd));
+            const odds = (1.0 - pSafe) / pSafe;
+            const factor = 40.0 / Math.LN2;
+            const offset = 680 - (factor * Math.log(20.0));
+            const score = Math.round(Math.max(300, Math.min(850, offset + (factor * Math.log(odds)))));
+
+            document.getElementById('score-text').innerText = score;
+            document.getElementById('metric-pd').innerText = (pd * 100).toFixed(1) + '%';
+            document.getElementById('metric-dti').innerText = (loan_pct * 100).toFixed(1) + '%';
+
+            const circle = document.getElementById('circle');
+            const badge = document.getElementById('decision-badge');
+            const tierEl = document.getElementById('metric-tier');
+
+            if (score >= 740) {
+                circle.style.borderColor = '#22c55e';
+                badge.style.background = '#22c55e20';
+                badge.style.color = '#22c55e';
+                badge.style.border = '1px solid #22c55e';
+                badge.innerText = 'APPROVED (Prime)';
+                tierEl.innerText = 'AAA / Prime+';
+            } else if (score >= 670) {
+                circle.style.borderColor = '#38bdf8';
+                badge.style.background = '#38bdf820';
+                badge.style.color = '#38bdf8';
+                badge.style.border = '1px solid #38bdf8';
+                badge.innerText = 'APPROVED (Standard)';
+                tierEl.innerText = 'A / Near Prime';
+            } else if (score >= 600) {
+                circle.style.borderColor = '#f59e0b';
+                badge.style.background = '#f59e0b20';
+                badge.style.color = '#f59e0b';
+                badge.style.border = '1px solid #f59e0b';
+                badge.innerText = 'MANUAL REVIEW';
+                tierEl.innerText = 'BBB / Borderline';
+            } else {
+                circle.style.borderColor = '#ef4444';
+                badge.style.background = '#ef444420';
+                badge.style.color = '#ef4444';
+                badge.style.border = '1px solid #ef4444';
+                badge.innerText = 'REJECTED';
+                tierEl.innerText = 'C / High Risk';
+            }
+        }
+
+        ['inp-income', 'inp-loan', 'inp-rate', 'inp-hist', 'inp-age', 'inp-home', 'inp-default'].forEach(id => {
+            document.getElementById(id).addEventListener('input', update);
+        });
+
+        update();
+    </script>
+</body>
+</html>
